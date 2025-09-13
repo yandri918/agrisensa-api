@@ -1,4 +1,4 @@
-blFlask
+Flask
 numpy
 opencv-python-headless
 scikit-learn
