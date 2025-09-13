@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import cv2
 import numpy as np
 import requests
@@ -276,3 +277,20 @@ def calculate_fertilizer_endpoint():
 if __name__ == '__main__':
     app.run(debug=True)
 
+=======
+from flask import Flask
+
+# Membuat instance atau objek dari aplikasi Flask
+app = Flask(__name__)
+
+# Mendefinisikan sebuah "route" atau URL endpoint untuk halaman utama ('/')
+@app.route('/')
+def hello_world():
+    # Fungsi ini akan dijalankan saat seseorang mengunjungi halaman utama
+    # dan akan mengembalikan teks sebagai respons
+    return 'Hello, Agrisensa!'
+
+# Baris ini memastikan server hanya berjalan saat file ini dieksekusi langsung
+if __name__ == '__main__':
+    app.run(debug=True)
+>>>>>>> 8336b2b3454922b5bd96d2e33fe8139ab5a096af
