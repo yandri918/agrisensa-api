@@ -27,8 +27,8 @@
         h2 { display: flex; align-items: center; gap: 12px; color: var(--primary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-top: 0; font-size: 1.5em; font-weight: 600; }
         h3 { color: var(--primary-color); border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 25px; font-weight: 600; }
         h4 { color: #333; margin-top: 15px; margin-bottom: 5px; }
-        button { background-color: var(--primary-light); color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 500; width: 100%; transition: all 0.2s; }
-        button:hover { background-color: var(--primary-color); transform: translateY(-2px); }
+        button, .option-button { background-color: var(--primary-light); color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 500; width: 100%; transition: all 0.2s; margin-bottom: 10px; }
+        button:hover, .option-button:hover { background-color: var(--primary-color); transform: translateY(-2px); }
         .result-box { margin-top: 20px; padding: 20px; border-radius: 8px; background-color: #f8f9fa; line-height: 1.6; border: 1px solid var(--border-color); }
         input, select { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1em; box-sizing: border-box; }
         label { font-weight: 500; margin-bottom: 8px; display: block; }
@@ -368,6 +368,47 @@
             <button type="submit">Buat Prediksi & Analisis</button>
         </form>
         <div id="result-xai-yield" class="result-box" style="display:none;"></div>
+    </div>
+
+    <!-- Modul 17: Kalkulator Konversi Pupuk -->
+    <div class="module">
+        <h2>⚖️ Modul 17: Kalkulator Konversi Pupuk</h2>
+        <p>Ubah kebutuhan unsur hara murni (kg) menjadi jumlah pupuk yang harus Anda siapkan.</p>
+        <form id="fertilizer-conversion-form">
+            <div class="input-grid">
+                <div>
+                    <label for="nutrient-needed-select">Unsur Hara yang Dibutuhkan:</label>
+                    <select id="nutrient-needed-select" required>
+                        <option value="N">Nitrogen (N)</option>
+                        <option value="P">Fosfor (P)</option>
+                        <option value="K">Kalium (K)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="nutrient-amount-input">Jumlah Kebutuhan (kg):</label>
+                    <input type="number" id="nutrient-amount-input" step="any" placeholder="Contoh: 10" required>
+                </div>
+            </div>
+            <label for="fertilizer-type-select">Sumber Pupuk yang Akan Digunakan:</label>
+            <select id="fertilizer-type-select" required>
+                <option value="" disabled selected>-- Pilih Jenis Pupuk --</option>
+                <option value="urea">Urea</option>
+                <option value="sp36">SP-36</option>
+                <option value="kcl">KCL (MOP)</option>
+                <option value="npk_mutiara">NPK Mutiara (16-16-16)</option>
+            </select>
+            <button type="submit">Hitung Kebutuhan Pupuk</button>
+        </form>
+        <div id="result-fertilizer-conversion" class="result-box"><p>Hasil perhitungan akan muncul di sini.</p></div>
+    </div>
+
+    <!-- Modul 18: Diagnostik Gejala Cerdas -->
+    <div class="module">
+        <h2>🧑‍⚕️ Modul 18: Diagnostik Gejala Cerdas</h2>
+        <p>Jawab serangkaian pertanyaan untuk mendiagnosis masalah pada tanaman Anda, langkah demi langkah.</p>
+        <button id="start-diagnostic-btn">Mulai Diagnostik</button>
+        <div id="diagnostic-questions" class="result-box" style="display:none;"></div>
+        <div id="diagnostic-result" class="result-box" style="display:none;"></div>
     </div>
 
     <script>
@@ -761,7 +802,7 @@
                     resultYieldDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Tidak dapat terhubung ke server.</p>`;
                 }
             });
-             // --- Logika BARU untuk Modul 16 (Prediksi Panen XAI) ---
+             // --- Logika untuk Modul 16 (Prediksi Panen XAI) ---
             const xaiYieldForm = document.getElementById('xai-yield-prediction-form');
             const resultXaiYieldDiv = document.getElementById('result-xai-yield');
             let importanceChart; 
@@ -851,6 +892,84 @@
                     resultXaiYieldDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Tidak dapat terhubung ke server.</p>`;
                 }
             });
+
+             // --- Logika untuk Modul 17 (Kalkulator Konversi Pupuk) ---
+            const fertConversionForm = document.getElementById('fertilizer-conversion-form');
+            const resultFertConversionDiv = document.getElementById('result-fertilizer-conversion');
+            fertConversionForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                resultFertConversionDiv.innerHTML = '<p>Menghitung konversi...</p>';
+                const requestData = {
+                    nutrient_needed: document.getElementById('nutrient-needed-select').value,
+                    nutrient_amount_kg: document.getElementById('nutrient-amount-input').value,
+                    fertilizer_type: document.getElementById('fertilizer-type-select').value
+                };
+                try {
+                    const response = await fetch(`${baseUrl}/calculate-fertilizer-bags`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestData) });
+                    const data = await response.json();
+                    if (data.success) {
+                        resultFertConversionDiv.innerHTML = `<h3>Hasil Perhitungan</h3><p>Untuk memenuhi kebutuhan <strong>${data.nutrient_amount_kg} kg</strong> unsur hara <strong>${data.nutrient_needed}</strong>, Anda memerlukan:</p><p style="font-size: 1.8em; text-align: center; font-weight: bold; color: var(--primary-color);">${data.required_fertilizer_kg} kg pupuk ${data.fertilizer_name}</p>`;
+                    } else {
+                        resultFertConversionDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${data.error}</p>`;
+                    }
+                } catch (error) {
+                    resultFertConversionDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Tidak dapat terhubung ke server.</p>`;
+                }
+            });
+            
+            // --- Logika untuk Modul 18 (Diagnostik Gejala Cerdas) ---
+            const startBtn = document.getElementById('start-diagnostic-btn');
+            const questionsDiv = document.getElementById('diagnostic-questions');
+            const resultDiv = document.getElementById('diagnostic-result');
+            let diagnosticTree = null;
+            async function startDiagnostic() {
+                startBtn.style.display = 'none';
+                questionsDiv.style.display = 'block';
+                resultDiv.style.display = 'none';
+                resultDiv.innerHTML = '';
+                questionsDiv.innerHTML = '<p>Memuat data diagnostik...</p>';
+                try {
+                    if (!diagnosticTree) {
+                        const response = await fetch('/get-diagnostic-tree');
+                        const responseData = await response.json();
+                        if (responseData.success) {
+                            diagnosticTree = responseData.data;
+                        } else {
+                            throw new Error(responseData.error);
+                        }
+                    }
+                    renderQuestion(diagnosticTree.start, []);
+                } catch (error) {
+                    questionsDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${error.message}</p>`;
+                }
+            }
+            function renderQuestion(node, path) {
+                questionsDiv.innerHTML = `<h4>${node.question}</h4>`;
+                for (const [key, nextNode] of Object.entries(node.options)) {
+                    const button = document.createElement('button');
+                    button.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    button.classList.add('option-button');
+                    button.onclick = () => {
+                        if (typeof nextNode === 'string') {
+                            renderResult(nextNode);
+                        } else {
+                            renderQuestion(nextNode, [...path, key]);
+                        }
+                    };
+                    questionsDiv.appendChild(button);
+                }
+            }
+            function renderResult(diagnosis) {
+                questionsDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `<h3>Hasil Diagnosis</h3><p>${diagnosis}</p><button class="option-button" id="restart-diagnostic-btn">Mulai Lagi</button>`;
+                document.getElementById('restart-diagnostic-btn').onclick = () => {
+                     startBtn.style.display = 'block';
+                     questionsDiv.style.display = 'none';
+                     resultDiv.style.display = 'none';
+                };
+            }
+            startBtn.addEventListener('click', startDiagnostic);
         });
     </script>
 </body>

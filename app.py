@@ -12,6 +12,7 @@ import os
 import logging
 import random
 from datetime import datetime, timedelta
+import threading
 
 # Konfigurasi logging dasar
 logging.basicConfig(level=logging.INFO)
@@ -44,28 +45,36 @@ def init_db_command():
         db.create_all()
     app.logger.info("Database berhasil diinisialisasi dengan semua tabel.")
 
-# --- Pemuatan Model ML ---
-def get_path(filename):
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
+# --- LAZY LOADING UNTUK MODEL ML ---
+_model_cache = {}
+_model_lock = threading.Lock()
 
-def load_model(path):
-    absolute_path = get_path(path)
-    if os.path.exists(absolute_path):
-        try:
-            model = joblib.load(absolute_path)
-            app.logger.info(f"Berhasil MEMUAT model dari: {absolute_path}")
-            return model
-        except Exception as e:
-            app.logger.error(f"GAGAL MEMUAT model dari {absolute_path}: {e}", exc_info=True)
-    app.logger.warning(f"PERINGATAN: File model '{absolute_path}' TIDAK DITEMUKAN.")
-    return None
+MODEL_PATHS = {
+    'bwd': 'bwd_model.pkl',
+    'recommendation': 'recommendation_model.pkl',
+    'crop_recommendation': 'crop_recommendation_model.pkl',
+    'yield_prediction': 'yield_prediction_model.pkl',
+    'advanced_yield': 'advanced_yield_model.pkl',
+    'shap_explainer': 'shap_explainer.pkl'
+}
 
-bwd_model = load_model('bwd_model.pkl')
-recommendation_model = load_model('recommendation_model.pkl')
-crop_recommendation_model = load_model('crop_recommendation_model.pkl')
-yield_prediction_model = load_model('yield_prediction_model.pkl') # <-- PERBAIKAN DI SINI
-advanced_yield_model = load_model('advanced_yield_model.pkl')
-shap_explainer = load_model('shap_explainer.pkl')
+def get_model(model_name):
+    """Memuat model sesuai permintaan dan menyimpannya di cache."""
+    with _model_lock:
+        if model_name not in _model_cache:
+            app.logger.info(f"LAZY LOADING: Memuat model '{model_name}' untuk pertama kali...")
+            path = os.path.join(os.path.dirname(os.path.abspath(__file__)), MODEL_PATHS[model_name])
+            if os.path.exists(path):
+                try:
+                    _model_cache[model_name] = joblib.load(path)
+                    app.logger.info(f"Model '{model_name}' berhasil dimuat.")
+                except Exception as e:
+                    app.logger.error(f"GAGAL MEMUAT model '{model_name}': {e}", exc_info=True)
+                    _model_cache[model_name] = None
+            else:
+                app.logger.warning(f"PERINGATAN: File model '{path}' TIDAK DITEMUKAN.")
+                _model_cache[model_name] = None
+        return _model_cache[model_name]
 
 # --- BASIS DATA PENGETAHUAN LENGKAP ---
 KNOWLEDGE_BASE = {
@@ -147,10 +156,70 @@ PH_KNOWLEDGE_BASE = {
         "Tanah-Basa": {"title": "Masalah Tanah Basa (pH > 7.2)", "content": ["**Pengikatan Unsur Mikro:** Unsur mikro esensial seperti **Besi (Fe), Mangan (Mn), dan Seng (Zn)** menjadi tidak larut.", "**Gejala:** Daun muda menguning (klorosis) meskipun unsur tersebut ada di dalam tanah.", "**Pengikatan Fosfor (P) oleh Kalsium:** Fosfor kembali terikat, kali ini oleh Kalsium (Ca) yang melimpah.", "**Solusi Utama:** Aplikasi bahan pembenah tanah yang bersifat asam seperti **Belerang (Sulfur)** atau memperbanyak bahan organik."]}
     }
 }
+FERTILIZER_DATA = {
+    "urea": {"name": "Urea", "content": {"N": 0.46, "P": 0, "K": 0}},
+    "sp36": {"name": "SP-36", "content": {"N": 0, "P": 0.158, "K": 0}},
+    "kcl": {"name": "KCL (MOP)", "content": {"N": 0, "P": 0, "K": 0.50}},
+    "npk_mutiara": {"name": "NPK Mutiara (16-16-16)", "content": {"N": 0.16, "P": 0.07, "K": 0.13}}
+}
+DECISION_TREE_KNOWLEDGE_BASE = {
+    "start": {
+        "question": "Di bagian mana gejala utama muncul?",
+        "options": {
+            "daun": {
+                "question": "Gejala spesifik di daun seperti apa?",
+                "options": {
+                    "keriting_kecil": {
+                        "question": "Apakah ada serangga kecil keperakan/kehitaman di balik daun?",
+                        "options": {
+                            "ya": "DIAGNOSIS: Serangan Hama Thrips (Kutu Kebul). Hama ini menghisap cairan daun, menyebabkan daun keriting dan kerdil. REKOMENDASI: Segera semprot dengan insektisida berbahan aktif Abamektin dan lihat Modul 10 untuk strategi rotasi.",
+                            "tidak": "DIAGNOSIS: Kemungkinan serangan Tungau atau kekurangan Kalsium (Ca). REKOMENDASI: Periksa bagian bawah daun dengan kaca pembesar untuk melihat tungau. Lakukan juga pemupukan Kalsium."
+                        }
+                    },
+                    "bercak": {
+                        "question": "Apa warna bercak tersebut?",
+                        "options": {
+                            "coklat_hitam": "DIAGNOSIS: Serangan jamur Cercospora atau Colletotrichum (Antraknosa). REKOMENDASI: Segera buang daun yang terinfeksi. Lakukan penyemprotan fungisida berbahan aktif Mankozeb (kontak) dirotasi dengan Difenokonazol (sistemik).",
+                            "kuning": "DIAGNOSIS: Kemungkinan besar Virus Gemini (Penyakit Kuning). REKOMENDASI: Penyakit ini disebarkan oleh kutu kebul. Cabut dan musnahkan tanaman yang terinfeksi parah untuk mencegah penyebaran. Kendalikan vektornya."
+                        }
+                    },
+                    "menguning": {
+                        "question": "Bagian daun mana yang menguning terlebih dahulu?",
+                        "options": {
+                            "daun_tua_dari_ujung": "DIAGNOSIS: Gejala klasik kekurangan Nitrogen (N). REKOMENDASI: Lakukan pemupukan susulan dengan pupuk yang kaya Nitrogen seperti Urea atau NPK seimbang.",
+                            "daun_muda": "DIAGNOSIS: Gejala kekurangan unsur mikro, biasanya Besi (Fe) atau Sulfur (S), sering disebabkan oleh pH tanah yang terlalu tinggi (basa). REKOMENDASI: Ukur pH tanah. Jika di atas 7.2, berikan pupuk yang mengandung sulfat dan bahan organik."
+                        }
+                    }
+                }
+            },
+            "buah": {
+                "question": "Gejala spesifik di buah seperti apa?",
+                "options": {
+                    "busuk_berair": {
+                        "question": "Apakah ada lingkaran hitam/oranye yang cekung?",
+                        "options": {
+                            "ya": "DIAGNOSIS: Serangan jamur Antraknosa (Patek). Ini adalah penyakit paling merusak pada buah cabai. REKOMENDASI: Jaga kebersihan kebun. Lakukan penyemprotan fungisida secara preventif saat musim hujan.",
+                            "tidak": "DIAGNOSIS: Kemungkinan Busuk Buah Phytophthora. REKOMENDASI: Perbaiki drainase lahan. Semprot dengan fungisida yang mengandung bahan aktif Metalaksil atau Dimetomorf."
+                        }
+                    },
+                    "ada_lubang_kecil": "DIAGNOSIS: Serangan Lalat Buah. Larva lalat memakan bagian dalam buah, menyebabkan buah busuk dan rontok. REKOMENDASI: Pasang perangkap yang mengandung Metil Eugenol/Petrogenol. Lakukan sanitasi dengan mengumpulkan buah yang jatuh."
+                }
+            },
+            "batang_tanaman": {
+                "question": "Gejala spesifik di batang/tanaman seperti apa?",
+                "options": {
+                    "layu_mendadak": "DIAGNOSIS: Kemungkinan besar Layu Fusarium atau Layu Bakteri. Keduanya adalah penyakit tular tanah yang mematikan. REKOMENDASI: Cabut dan musnahkan tanaman yang terinfeksi untuk mencegah penyebaran. Perbaiki drainase dan aplikasikan agens hayati Trichoderma sp. pada lubang tanam untuk tanaman berikutnya.",
+                    "kerdil_dan_kaku": "DIAGNOSIS: Kemungkinan besar serangan Virus Kerdil. REKOMENDASI: Sama seperti Virus Gemini, penyakit ini tidak bisa disembuhkan. Fokus pada pengendalian serangga vektornya seperti kutu kebul."
+                }
+            }
+        }
+    }
+}
 
 
 # --- Fungsi Helper & Logika Bisnis ---
 def analyze_leaf_with_ml(image_data):
+    bwd_model = get_model('bwd')
     if bwd_model is None: raise RuntimeError("Model BWD tidak dimuat.")
     nparr = np.frombuffer(image_data, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -166,6 +235,7 @@ def analyze_leaf_with_ml(image_data):
     return avg_hue, int(predicted_score), confidence
 
 def get_fertilizer_recommendation(data):
+    recommendation_model = get_model('recommendation')
     if recommendation_model is None: raise RuntimeError("Model Rekomendasi tidak dimuat.")
     ph_tanah = float(data['ph_tanah'])
     rekomendasi_utama = ""
@@ -406,12 +476,13 @@ def get_ph_info_endpoint():
 @app.route('/recommend-crop', methods=['POST'])
 def recommend_crop_endpoint():
     try:
-        if crop_recommendation_model is None:
-            raise RuntimeError("Model Rekomendasi Tanaman tidak bisa dimuat. Jalankan train_crop_model.py")
+        crop_model = get_model('crop_recommendation')
+        if crop_model is None:
+            raise RuntimeError("Model Rekomendasi Tanaman tidak bisa dimuat.")
         data = request.get_json()
         features = [float(data.get(k, 0)) for k in ['n_value', 'p_value', 'k_value', 'temperature', 'humidity', 'ph', 'rainfall']]
         input_data = np.array([features])
-        prediction = crop_recommendation_model.predict(input_data)[0]
+        prediction = crop_model.predict(input_data)[0]
         return jsonify({'success': True, 'recommended_crop': prediction.capitalize()})
     except Exception as e:
         app.logger.error(f"Error di /recommend-crop: {e}", exc_info=True)
@@ -420,12 +491,13 @@ def recommend_crop_endpoint():
 @app.route('/predict-yield', methods=['POST'])
 def predict_yield_endpoint():
     try:
-        if yield_prediction_model is None:
-            raise RuntimeError("Model Prediksi Panen tidak bisa dimuat. Jalankan train_yield_model.py")
+        yield_model = get_model('yield_prediction')
+        if yield_model is None:
+            raise RuntimeError("Model Prediksi Panen tidak bisa dimuat.")
         data = request.get_json()
         features = [float(data.get(k, 0)) for k in ['nitrogen', 'phosphorus', 'potassium', 'temperature', 'rainfall', 'ph']]
         input_data = np.array([features])
-        prediction = yield_prediction_model.predict(input_data)[0]
+        prediction = yield_model.predict(input_data)[0]
         return jsonify({'success': True, 'predicted_yield_ton_ha': round(float(prediction) / 1000, 2)})
     except Exception as e:
         app.logger.error(f"Error di /predict-yield: {e}", exc_info=True)
@@ -434,7 +506,9 @@ def predict_yield_endpoint():
 @app.route('/predict-yield-advanced', methods=['POST'])
 def predict_yield_advanced_endpoint():
     try:
-        if advanced_yield_model is None or shap_explainer is None:
+        advanced_model = get_model('advanced_yield')
+        explainer = get_model('shap_explainer')
+        if advanced_model is None or explainer is None:
             raise RuntimeError("Model Prediksi Panen Lanjutan atau SHAP explainer tidak bisa dimuat.")
 
         data = request.get_json()
@@ -444,12 +518,12 @@ def predict_yield_advanced_endpoint():
         
         input_data = pd.DataFrame([features], columns=feature_names)
         
-        prediction = advanced_yield_model.predict(input_data)[0]
+        prediction = advanced_model.predict(input_data)[0]
 
-        importances = advanced_yield_model.feature_importances_
+        importances = advanced_model.feature_importances_
         feature_importance_dict = sorted(zip(feature_names, [float(i) for i in importances]), key=lambda x: x[1], reverse=True)
 
-        shap_values = shap_explainer.shap_values(input_data)
+        shap_values = explainer.shap_values(input_data)
         shap_dict = {name: round(float(val), 2) for name, val in zip(feature_names, shap_values[0])}
 
         return jsonify({
@@ -457,12 +531,55 @@ def predict_yield_advanced_endpoint():
             'predicted_yield_ton_ha': round(float(prediction) / 1000, 2),
             'feature_importances': feature_importance_dict,
             'shap_values': shap_dict,
-            'base_value': round(float(shap_explainer.expected_value) / 1000, 2)
+            'base_value': round(float(explainer.expected_value) / 1000, 2)
         })
 
     except Exception as e:
         app.logger.error(f"Error di /predict-yield-advanced: {e}", exc_info=True)
         return jsonify({'success': False, 'error': 'Kesalahan internal saat membuat prediksi XAI.'}), 500
+
+@app.route('/calculate-fertilizer-bags', methods=['POST'])
+def calculate_fertilizer_bags_endpoint():
+    try:
+        data = request.get_json()
+        nutrient_needed = data.get('nutrient_needed') # 'N', 'P', atau 'K'
+        nutrient_amount_kg = float(data.get('nutrient_amount_kg', 0))
+        fertilizer_type = data.get('fertilizer_type')
+
+        if not all([nutrient_needed, nutrient_amount_kg > 0, fertilizer_type]):
+            return jsonify({'success': False, 'error': 'Input tidak valid.'}), 400
+            
+        fert_data = FERTILIZER_DATA.get(fertilizer_type)
+        if not fert_data:
+            return jsonify({'success': False, 'error': 'Jenis pupuk tidak ditemukan.'}), 404
+            
+        nutrient_percentage = fert_data["content"].get(nutrient_needed, 0)
+        
+        if nutrient_percentage == 0:
+            return jsonify({'success': False, 'error': f'Pupuk {fert_data["name"]} tidak mengandung unsur {nutrient_needed}.'}), 400
+            
+        required_fertilizer_kg = nutrient_amount_kg / nutrient_percentage
+
+        return jsonify({
+            'success': True,
+            'required_fertilizer_kg': round(required_fertilizer_kg, 2),
+            'fertilizer_name': fert_data["name"],
+            'nutrient_needed': nutrient_needed,
+            'nutrient_amount_kg': nutrient_amount_kg
+        })
+
+    except Exception as e:
+        app.logger.error(f"Error di /calculate-fertilizer-bags: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': 'Kesalahan internal saat menghitung.'}), 500
+
+@app.route('/get-diagnostic-tree', methods=['GET'])
+def get_diagnostic_tree_endpoint():
+    """Menyajikan seluruh struktur Decision Tree ke frontend."""
+    try:
+        return jsonify({'success': True, 'data': DECISION_TREE_KNOWLEDGE_BASE})
+    except Exception as e:
+        app.logger.error(f"Error di /get-diagnostic-tree: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': 'Kesalahan internal saat memuat data diagnostik.'}), 500
 
 # --- Menjalankan Aplikasi (Hanya untuk lokal) ---
 if __name__ == '__main__':
