@@ -9,155 +9,71 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- PENTING: Tambahkan library Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
-        /* CSS Variables untuk tema yang konsisten */
-        :root {
-            --primary-color: #2e7d32; /* Hijau lebih gelap */
-            --primary-light: #4caf50;
-            --background-color: #f8f9fa;
-            --card-background: #ffffff;
-            --text-color: #212529;
-            --text-muted: #6c757d;
-            --border-color: #dee2e6;
-            --shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: var(--background-color);
-            color: var(--text-color);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .header h1 {
-            color: var(--primary-color);
-            font-weight: 700;
-            font-size: 2.5em;
-        }
-        .header p {
-            font-size: 1.1em;
-            color: var(--text-muted);
-        }
-        .module {
-            background-color: var(--card-background);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease-in-out;
-        }
-        .module:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.07);
-        }
-        h2 {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--primary-color);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
-            margin-top: 0;
-            font-size: 1.5em;
-            font-weight: 600;
-        }
-        h3 {
-            color: var(--primary-color);
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-            margin-top: 25px;
-            font-weight: 600;
-        }
-        button {
-            background-color: var(--primary-light);
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 500;
-            transition: background-color 0.3s, transform 0.2s;
-            width: 100%;
-        }
-        button:hover {
-            background-color: var(--primary-color);
-            transform: translateY(-2px);
-        }
-        .result-box {
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 8px;
-            background-color: #f8f9fa;
-            line-height: 1.6;
-            border: 1px solid var(--border-color);
-        }
-        input, select {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            font-size: 1em;
-            box-sizing: border-box;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        input:focus, select:focus {
-            border-color: var(--primary-light);
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.25);
-            outline: none;
-        }
-        label {
-            font-weight: 500;
-            margin-bottom: 8px;
-            display: block;
-        }
-        ul { padding-left: 20px; }
-        li { margin-bottom: 10px; }
-        .label { font-weight: bold; padding: 4px 10px; border-radius: 15px; color: white; font-size: 0.9em; }
-        .label-optimal { background-color: #2e7d32; }
-        .label-rendah { background-color: #d32f2f; }
-        .label-berlebih { background-color: #f57c00; }
-        .price-item, .fertilizer-item, .knowledge-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            padding: 12px 0;
-            list-style-type: none;
-        }
-        .price-item:last-child, .fertilizer-item:last-child { border-bottom: none; }
+        :root { --primary-color: #2e7d32; --primary-light: #4caf50; --background-color: #f8f9fa; --card-background: #ffffff; --text-color: #212529; --text-muted: #6c757d; --border-color: #dee2e6; --shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        body { font-family: 'Inter', sans-serif; max-width: 900px; margin: 20px auto; padding: 15px; background-color: var(--background-color); color: var(--text-color); }
+        .header { text-align: center; margin-bottom: 40px; }
+        h1 { color: var(--primary-color); font-weight: 700; font-size: 2.5em; }
+        .price-ticker-container { background-color: var(--text-color); color: white; padding: 10px 0; margin-bottom: 30px; border-radius: 8px; overflow: hidden; white-space: nowrap; }
+        .price-ticker-content { display: inline-block; padding-left: 100%; animation: scroll-left 40s linear infinite; }
+        .ticker-item { display: inline-block; margin: 0 25px; }
+        .ticker-item .name { font-weight: 500; }
+        .ticker-item .price { font-weight: 700; color: var(--primary-light); margin-left: 8px; }
+        @keyframes scroll-left { 0% { transform: translateX(0%); } 100% { transform: translateX(-100%); } }
+        .module { background-color: var(--card-background); border: 1px solid var(--border-color); border-radius: 12px; padding: 30px; margin-bottom: 30px; box-shadow: var(--shadow); }
+        h2 { display: flex; align-items: center; gap: 12px; color: var(--primary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-top: 0; font-size: 1.5em; font-weight: 600; }
+        h3 { color: var(--primary-color); border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 25px; font-weight: 600; }
+        h4 { color: #333; margin-top: 15px; margin-bottom: 5px; }
+        button { background-color: var(--primary-light); color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 500; width: 100%; transition: all 0.2s; }
+        button:hover { background-color: var(--primary-color); transform: translateY(-2px); }
+        .result-box { margin-top: 20px; padding: 20px; border-radius: 8px; background-color: #f8f9fa; line-height: 1.6; border: 1px solid var(--border-color); }
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1em; box-sizing: border-box; }
+        label { font-weight: 500; margin-bottom: 8px; display: block; }
+        ul { padding-left: 20px; } li { margin-bottom: 10px; }
+        .item-list { list-style-type: none; padding-left: 0; }
+        .price-item, .fertilizer-item, .pdf-item, .shap-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 12px 0; }
         .item-name { font-weight: 500; }
         .item-value { font-size: 1.1em; color: var(--primary-color); font-weight: 600; }
+        .pdf-item a { text-decoration: none; color: var(--primary-color); font-weight: 500;}
+        .pdf-item a:hover { text-decoration: underline; }
         .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 20px; flex-wrap: wrap; }
-        .tab-button { background: none; border: none; padding: 12px 18px; cursor: pointer; font-size: 1em; font-weight: 500; border-bottom: 3px solid transparent; color: var(--text-muted); transition: all 0.3s; }
+        .tab-button { background: none; border: none; padding: 12px 18px; cursor: pointer; font-size: 1em; font-weight: 500; border-bottom: 3px solid transparent; color: var(--text-muted); }
         .tab-button.active { border-bottom: 3px solid var(--primary-light); color: var(--primary-color); font-weight: 600; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .strategy-cycle { border-left: 3px solid var(--primary-light); padding-left: 20px; margin-bottom: 25px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color); }
+        th { background-color: #f8f9fa; font-weight: 600; }
+        td.cost { text-align: right; font-weight: 500; }
+        .total-cost { font-weight: bold; text-align: right; }
+        .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .shap-positive { color: #2e7d32; font-weight: bold; }
+        .shap-negative { color: #d32f2f; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>🌾 Dasbor Cerdas Agrisensa</h1>
-        <p>Solusi agrikultur presisi dari hulu hingga hilir, ditenagai oleh data.</p>
+    </div>
+
+    <div class="price-ticker-container">
+        <div class="price-ticker-content" id="price-ticker-content"><span>Memuat data harga...</span></div>
     </div>
 
     <!-- Modul 1: Dokter Tanaman -->
     <div class="module">
         <h2>🔬 Modul 1: Dokter Tanaman</h2>
         <form id="upload-form">
-            <label for="file-input">Unggah foto daun untuk diagnosis tingkat Nitrogen (BWD).</label>
+            <label for="file-input">Unggah foto daun untuk diagnosis BWD.</label>
             <input type="file" id="file-input" name="file" accept="image/*" required>
             <button type="submit">Analisis Daun</button>
         </form>
-        <div id="result-bwd" class="result-box"><p>Hasil analisis BWD akan muncul di sini.</p></div>
+        <div id="result-bwd" class="result-box"><p>Hasil analisis akan muncul di sini.</p></div>
     </div>
 
     <!-- Modul 2: Asisten Agronomi -->
@@ -199,7 +115,7 @@
         </form>
         <div id="result-price" class="result-box"><p>Data harga akan muncul di sini.</p></div>
     </div>
-
+    
     <!-- Modul 5: Basis Pengetahuan Budidaya -->
     <div class="module">
         <h2>📖 Modul 5: Basis Pengetahuan Budidaya</h2>
@@ -224,25 +140,13 @@
             <button class="tab-button" onclick="openTab(event, 'poc-zpt', this)">POC & ZPT</button>
         </div>
         <div id="pupuk-npk" class="tab-content active knowledge-section">
-            <h3>Pupuk Dasar (N, P, K)</h3>
-            <p>Memahami tiga pilar utama nutrisi tanaman.</p>
-            <h4>Nitrogen (N)</h4><ul><li><strong>Penjelasan:</strong> Unsur hara makro primer yang paling dibutuhkan tanaman. Komponen utama dari klorofil dan asam amino.</li><li><strong>Fungsi:</strong> Bertanggung jawab atas pertumbuhan vegetatif (daun, batang) dan memberikan warna hijau.</li><li><strong>Sumber Kimia:</strong> Urea, ZA, NPK.</li><li><strong>Sumber Organik:</strong> Kompos, pupuk kandang, MOL Keong.</li></ul>
-            <h4>Fosfor (P)</h4><ul><li><strong>Penjelasan:</strong> Unsur makro yang berperan sebagai "mesin energi" seluler (ATP).</li><li><strong>Fungsi:</strong> Merangsang pertumbuhan akar, pembungaan, pematangan buah, dan pembentukan biji.</li><li><strong>Sumber Kimia:</strong> SP-36, TSP, NPK.</li><li><strong>Sumber Organik:</strong> Pupuk kandang, guano, tepung tulang.</li></ul>
-            <h4>Kalium (K)</h4><ul><li><strong>Penjelasan:</strong> Unsur makro yang berfungsi sebagai "regulator" fungsi enzim dan efisiensi air.</li><li><strong>Fungsi:</strong> Memperkuat batang, meningkatkan kualitas buah (rasa, warna, daya simpan), dan ketahanan stres.</li><li><strong>Sumber Kimia:</strong> KCL (MOP), ZK, NPK.</li><li><strong>Sumber Organik:</strong> Sabut kelapa, bonggol pisang, abu kayu.</li></ul>
+            <h3>Pupuk Dasar (N, P, K)</h3><p>Memahami tiga pilar utama nutrisi tanaman untuk pertumbuhan optimal.</p><h4>Nitrogen (N) - Unsur Pertumbuhan</h4><ul><li><strong>Fungsi Fisiologis:</strong> Bertanggung jawab atas pertumbuhan vegetatif (daun, batang) dan memberikan warna hijau pekat pada daun sebagai komponen utama klorofil.</li><li><strong>Gejala Kekurangan:</strong> Daun tua menguning (klorosis) dimulai dari ujung daun, pertumbuhan tanaman kerdil.</li><li><strong>Sumber Kimia:</strong> Urea, ZA, NPK.</li><li><strong>Sumber Organik:</strong> Kompos, pupuk kandang (terutama dari unggas), leguminosa, MOL Keong.</li></ul><h4>Fosfor (P) - Unsur Energi & Akar</h4><ul><li><strong>Fungsi Fisiologis:</strong> Berperan sebagai inti transfer energi seluler (ATP), merangsang pertumbuhan akar yang kuat, mempercepat pembungaan dan pematangan buah/biji.</li><li><strong>Gejala Kekurangan:</strong> Pertumbuhan kerdil, warna daun ungu kemerahan, pembungaan dan pembuahan terhambat.</li><li><strong>Sumber Kimia:</strong> SP-36, TSP, NPK.</li><li><strong>Sumber Organik:</strong> Guano (kotoran kelelawar), tepung tulang, pupuk kandang.</li></ul><h4>Kalium (K) - Unsur Kualitas & Ketahanan</h4><ul><li><strong>Fungsi Fisiologis:</strong> Berfungsi sebagai "regulator" yang memperkuat batang, meningkatkan kualitas buah (rasa, warna, daya simpan), dan meningkatkan ketahanan terhadap stres kekeringan dan penyakit.</li><li><strong>Gejala Kekurangan:</strong> Tepi daun tua terlihat seperti terbakar (kering kecoklatan), buah mudah rontok dan kualitasnya rendah.</li><li><strong>Sumber Kimia:</strong> KCL (MOP), ZK, NPK.</li><li><strong>Sumber Organik:</strong> Sabut kelapa, bonggol pisang, abu kayu (tidak dari kayu yang dicat).</li></ul>
         </div>
         <div id="agen-hayati" class="tab-content knowledge-section">
-             <h3>Agen Hayati: "Pasukan" Pelindung Tanah</h3>
-            <p>Mikroorganisme bermanfaat yang menjadi fondasi pertanian organik.</p>
-            <h4>Trichoderma sp.</h4><ul><li><strong>Penjelasan:</strong> Jamur saprofit yang mengkolonisasi perakaran.</li><li><strong>Fungsi:</strong> Berperan sebagai fungisida hayati, melawan jamur patogen seperti Fusarium penyebab layu.</li><li><strong>Sumber:</strong> Diisolasi dari tanah hutan atau perakaran bambu.</li></ul>
-            <h4>PGPR (Plant Growth-Promoting Rhizobacteria)</h4><ul><li><strong>Penjelasan:</strong> Kelompok bakteri di sekitar akar yang mendorong pertumbuhan.</li><li><strong>Fungsi:</strong> Menambat Nitrogen, melarutkan Fosfor, dan memproduksi hormon tumbuh alami.</li><li><strong>Sumber:</strong> Diisolasi dari perakaran tanaman sehat seperti bambu atau sereh wangi.</li></ul>
-            <h4>Mikoriza</h4><ul><li><strong>Penjelasan:</strong> Jamur yang bersimbiosis mutualisme dengan akar.</li><li><strong>Fungsi:</strong> Berfungsi sebagai perpanjangan akar, memperluas area penyerapan air dan unsur hara (terutama Fosfor).</li><li><strong>Sumber:</strong> Dijual sebagai inokulan spora yang harus kontak dengan akar.</li></ul>
+             <h3>Agen Hayati: "Pasukan" Pelindung & Penyubur Tanah</h3><p>Mikroorganisme bermanfaat yang menjadi fondasi pertanian organik dan regeneratif.</p><h4>Trichoderma sp.</h4><ul><li><strong>Fungsi Utama:</strong> Fungisida Hayati (Biofungisida).</li><li><strong>Mekanisme Kerja:</strong> Melalui kompetisi ruang di perakaran (*rhizosphere*), **mikoparasitisme** (melilit dan menghancurkan jamur patogen), dan antibiosis (mengeluarkan zat anti-jamur).</li><li><strong>Target:</strong> Sangat efektif mencegah penyakit layu *Fusarium*, busuk akar *Pythium*, dan rebah semai *Rhizoctonia*.</li></ul><h4>PGPR (Plant Growth-Promoting Rhizobacteria)</h4><ul><li><strong>Fungsi Utama:</strong> Pupuk Hayati & Stimulan Pertumbuhan.</li><li><strong>Mekanisme Kerja:</strong> Menambat Nitrogen dari udara, **melarutkan Fosfor** yang terikat di tanah dengan enzim fosfatase, dan memproduksi fitohormon (seperti Auksin) serta **siderofor** (pengikat besi).</li><li><strong>Target:</strong> Meningkatkan ketersediaan N & P, serta merangsang sistem perakaran menjadi lebih lebat.</li></ul><h4>Mikoriza</h4><ul><li><strong>Fungsi Utama:</strong> Perluasan Sistem Perakaran (Biofertilizer).</li><li><strong>Mekanisme Kerja:</strong> Hifa jamur bersimbiosis dengan akar dan berfungsi sebagai perpanjangan akar, memperluas area penyerapan air dan unsur hara **imobil** (seperti Fosfor) hingga ratusan kali lipat.</li><li><strong>Target:</strong> Meningkatkan ketahanan tanaman terhadap kekeringan dan efisiensi penyerapan pupuk P secara signifikan.</li></ul>
         </div>
         <div id="poc-zpt" class="tab-content knowledge-section">
-            <h3>POC & ZPT: Suplemen & Hormon Alami</h3>
-            <p>Nutrisi tambahan dan stimulasi pertumbuhan.</p>
-            <h4>Auksin</h4><ul><li><strong>Penjelasan:</strong> Hormon pemanjangan sel dan inisiasi akar.</li><li><strong>Fungsi:</strong> Merangsang pertumbuhan akar pada bibit dan stek.</li><li><strong>Sumber:</strong> Tauge, rebung bambu.</li></ul>
-            <h4>Sitokinin</h4><ul><li><strong>Penjelasan:</strong> Hormon pembelahan sel.</li><li><strong>Fungsi:</strong> Merangsang pertumbuhan tunas samping (membuat rimbun) dan menunda penuaan daun.</li><li><strong>Sumber:</strong> Air kelapa, daun kelor.</li></ul>
-            <h4>Giberelin</h4><ul><li><strong>Penjelasan:</strong> Hormon untuk mematahkan dormansi dan pembesaran organ.</li><li><strong>Fungsi:</strong> Mempercepat perkecambahan, merangsang pembungaan, dan memperbesar buah.</li><li><strong>Sumber:</strong> Bonggol pisang, ganggang laut.</li></ul>
+            <h3>POC & ZPT: Suplemen & Hormon Alami</h3><p>Nutrisi tambahan dan stimulasi pertumbuhan untuk memaksimalkan potensi tanaman.</p><h4>MOL (Mikroorganisme Lokal)</h4><ul><li><strong>Penjelasan:</strong> Larutan hasil fermentasi bahan-bahan organik lokal (keong, bonggol pisang, dll.) yang kaya akan mikroorganisme, enzim, dan unsur hara mikro. Berfungsi sebagai pupuk cair sekaligus dekomposer.</li></ul><h4>Auksin</h4><ul><li><strong>Fungsi Fisiologis:</strong> Hormon yang fokus pada **pemanjangan sel** dan **inisiasi akar**.</li><li><strong>Aplikasi Praktis:</strong> Merangsang pertumbuhan akar pada bibit dan stek.</li><li><strong>Sumber Alami:</strong> Tauge (kecambah kacang hijau), rebung bambu.</li></ul><h4>Sitokinin</h4><ul><li><strong>Fungsi Fisiologis:</strong> Hormon yang fokus pada **pembelahan sel**.</li><li><strong>Aplikasi Praktis:</strong> Merangsang pertumbuhan tunas samping (membuat tanaman rimbun) dan menunda penuaan daun. Sangat kaya pada **daun kelor (mengandung Zeatin)**.</li><li><strong>Sumber Alami:</strong> Air kelapa, daun kelor.</li></ul><h4>Giberelin</h4><ul><li><strong>Fungsi Fisiologis:</strong> Hormon serbaguna untuk **mematahkan dormansi** dan **pembesaran organ**.</li><li><strong>Aplikasi Praktis:</strong> Mempercepat perkecambahan biji, merangsang pembungaan serempak, dan memperbesar ukuran buah.</li><li><strong>Sumber Alami:</strong> Bonggol pisang, ganggang laut.</li></ul>
         </div>
     </div>
 
@@ -266,259 +170,685 @@
         <div id="result-fertilizer" class="result-box"><p>Hasil perhitungan akan muncul di sini.</p></div>
     </div>
 
+    <!-- Modul 8: Pustaka Dokumen -->
+    <div class="module">
+        <h2>📂 Modul 8: Pustaka Dokumen</h2>
+        <form id="pdf-upload-form">
+             <label for="pdf-file-input">Pilih File PDF untuk Diunggah:</label>
+            <input type="file" id="pdf-file-input" name="file" accept=".pdf" required>
+            <button type="submit">Unggah Dokumen</button>
+        </form>
+        <div id="pdf-upload-status" class="result-box" style="display:none;"></div>
+        <h3>Dokumen Tersimpan:</h3>
+        <div id="pdf-list" class="result-box"><p>Memuat daftar dokumen...</p></div>
+    </div>
+
+    <!-- Modul 9: Dasbor Rekomendasi Terpadu -->
+    <div class="module">
+        <h2>💡 Modul 9: Dasbor Rekomendasi Terpadu</h2>
+        <form id="integrated-recommendation-form">
+             <label for="ketinggian-select">Ketinggian Lahan:</label>
+            <select id="ketinggian-select" required>
+                <option value="" disabled selected>-- Pilih Ketinggian --</option>
+                <option value="dataran_rendah">Dataran Rendah (< 700 mdpl)</option>
+                <option value="dataran_tinggi">Dataran Tinggi (> 700 mdpl)</option>
+            </select>
+            <label for="iklim-select">Tipe Iklim:</label>
+            <select id="iklim-select" required>
+                <option value="" disabled selected>-- Pilih Tipe Iklim --</option>
+                <option value="tropis">Tropis</option>
+                <option value="subtropis">Subtropis</option>
+            </select>
+            <label for="fase-select">Fase Pertumbuhan Saat Ini:</label>
+            <select id="fase-select" required>
+                <option value="" disabled selected>-- Pilih Fase --</option>
+                <option value="vegetatif">Vegetatif</option>
+                <option value="generatif">Generatif</option>
+            </select>
+            <label for="masalah-select">Masalah Utama:</label>
+            <select id="masalah-select" required>
+                <option value="none" selected>Tidak Ada Masalah</option>
+                <option value="thrips">Hama Thrips</option>
+                <option value="antraknosa">Jamur Antraknosa</option>
+            </select>
+            <button type="submit">Dapatkan Rekomendasi</button>
+        </form>
+        <div id="result-integrated" class="result-box"><p>Rekomendasi terpadu akan muncul di sini.</p></div>
+    </div>
+
+    <!-- Modul 10: Strategi Penyemprotan Cerdas -->
+    <div class="module">
+        <h2>🛡️ Modul 10: Strategi Penyemprotan Cerdas</h2>
+        <form id="spraying-strategy-form">
+            <label for="pest-select">Pilih Hama/Penyakit Target:</label>
+            <select id="pest-select" required>
+                <option value="" disabled selected>-- Pilih Target --</option>
+                <option value="thrips">Hama Thrips</option>
+            </select>
+            <button type="submit">Dapatkan Strategi</button>
+        </form>
+        <div id="result-spraying" class="result-box"><p>Rencana strategis akan muncul di sini.</p></div>
+    </div>
+
+    <!-- Modul 11: Analisis Tren Harga -->
+    <div class="module">
+        <h2>📊 Modul 11: Analisis Tren Harga</h2>
+        <form id="historical-price-form">
+            <label for="historical-commodity-select">Pilih Komoditas:</label>
+            <select id="historical-commodity-select" required>
+                <option value="" disabled selected>-- Pilih Komoditas --</option>
+                <option value="cabai_merah_keriting">Cabai Merah Keriting</option>
+                <option value="bawang_merah">Bawang Merah</option>
+                <option value="jagung_pipilan">Jagung Pipilan</option>
+                <option value="beras_medium">Beras Medium</option>
+            </select>
+            <label for="time-range-select">Pilih Rentang Waktu:</label>
+            <select id="time-range-select" required>
+                <option value="30" selected>30 Hari Terakhir</option>
+                <option value="90">90 Hari Terakhir</option>
+            </select>
+            <button type="submit">Tampilkan Grafik</button>
+        </form>
+        <div id="result-historical-price" class="result-box">
+            <p>Grafik tren harga akan muncul di sini.</p>
+            <canvas id="price-chart" style="margin-top: 20px;"></canvas>
+        </div>
+    </div>
+    
+    <!-- Modul 12: Ensiklopedia Komoditas Cerdas -->
+    <div class="module">
+        <h2>🌶️ Modul 12: Ensiklopedia Komoditas Cerdas</h2>
+        <form id="guide-form">
+            <label for="guide-commodity-select">Pilih Komoditas:</label>
+            <select id="guide-commodity-select" required>
+                <option value="" disabled selected>-- Pilih Komoditas --</option>
+                <option value="cabai">Cabai</option>
+            </select>
+            <button type="submit">Tampilkan Panduan</button>
+        </form>
+        <div id="result-guide" class="result-box" style="display:none;"></div>
+    </div>
+
+    <!-- Modul 13: Pusat Pengetahuan pH Tanah -->
+    <div class="module">
+        <h2>🧪 Modul 13: Pusat Pengetahuan pH Tanah</h2>
+        <p>Pahami variabel utama yang mengontrol kesuburan tanah dan efektivitas pemupukan.</p>
+        <button id="show-ph-info-btn">Tampilkan Informasi Lengkap</button>
+        <div id="result-ph-info" class="result-box" style="display:none;"></div>
+    </div>
+
+    <!-- Modul 14: Rekomendasi Tanaman Cerdas -->
+    <div class="module">
+        <h2>🌱 Modul 14: Rekomendasi Tanaman Cerdas (Agrimap AI)</h2>
+        <p>Masukkan data tanah dan iklim Anda untuk mendapatkan rekomendasi tanaman yang paling sesuai dari model AI kami.</p>
+        <form id="crop-recommendation-form">
+            <div class="input-grid">
+                <div>
+                    <label for="crop-n-input">Kandungan Nitrogen (N) di Tanah:</label>
+                    <input type="number" id="crop-n-input" step="any" placeholder="Contoh: 90" required>
+                </div>
+                <div>
+                    <label for="crop-p-input">Kandungan Fosfor (P) di Tanah:</label>
+                    <input type="number" id="crop-p-input" step="any" placeholder="Contoh: 42" required>
+                </div>
+                 <div>
+                    <label for="crop-k-input">Kandungan Kalium (K) di Tanah:</label>
+                    <input type="number" id="crop-k-input" step="any" placeholder="Contoh: 43" required>
+                </div>
+                <div>
+                    <label for="crop-temp-input">Suhu Rata-rata (°C):</label>
+                    <input type="number" id="crop-temp-input" step="any" placeholder="Contoh: 20.8" required>
+                </div>
+                <div>
+                    <label for="crop-humidity-input">Kelembaban Udara Rata-rata (%):</label>
+                    <input type="number" id="crop-humidity-input" step="any" placeholder="Contoh: 82.1" required>
+                </div>
+                 <div>
+                    <label for="crop-ph-input">pH Tanah:</label>
+                    <input type="number" id="crop-ph-input" step="any" placeholder="Contoh: 6.5" required>
+                </div>
+            </div>
+            <label for="crop-rainfall-input">Curah Hujan Tahunan (mm):</label>
+            <input type="number" id="crop-rainfall-input" step="any" placeholder="Contoh: 202.9" required>
+            
+            <button type="submit">Dapatkan Rekomendasi Tanaman</button>
+        </form>
+        <div id="result-crop" class="result-box"><p>Rekomendasi tanaman akan muncul di sini.</p></div>
+    </div>
+    
+    <!-- Modul 15: Prediksi Hasil Panen Cerdas -->
+    <div class="module">
+        <h2>📈 Modul 15: Prediksi Hasil Panen Cerdas</h2>
+        <p>Masukkan data kondisi lahan dan iklim Anda untuk mendapatkan estimasi potensi hasil panen dari model AI kami.</p>
+        <form id="yield-prediction-form">
+            <div class="input-grid">
+                <div>
+                    <label for="yield-n-input">Nitrogen (N) (kg/ha):</label>
+                    <input type="number" id="yield-n-input" step="any" placeholder="Contoh: 138" required>
+                </div>
+                <div>
+                    <label for="yield-p-input">Fosfor (P) (kg/ha):</label>
+                    <input type="number" id="yield-p-input" step="any" placeholder="Contoh: 165" required>
+                </div>
+                 <div>
+                    <label for="yield-k-input">Kalium (K) (kg/ha):</label>
+                    <input type="number" id="yield-k-input" step="any" placeholder="Contoh: 339" required>
+                </div>
+                <div>
+                    <label for="yield-temp-input">Suhu (°C):</label>
+                    <input type="number" id="yield-temp-input" step="any" placeholder="Contoh: 21" required>
+                </div>
+                <div>
+                    <label for="yield-rainfall-input">Curah Hujan (mm):</label>
+                    <input type="number" id="yield-rainfall-input" step="any" placeholder="Contoh: 487" required>
+                </div>
+                 <div>
+                    <label for="yield-ph-input">pH Tanah:</label>
+                    <input type="number" id="yield-ph-input" step="any" placeholder="Contoh: 6.5" required>
+                </div>
+            </div>
+            <button type="submit">Prediksi Hasil Panen</button>
+        </form>
+        <div id="result-yield" class="result-box"><p>Prediksi hasil panen akan muncul di sini.</p></div>
+    </div>
+    
+    <!-- Modul 16: Intelijen Prediktif (XAI) -->
+    <div class="module">
+        <h2>🧠 Modul 16: Intelijen Prediktif (XAI)</h2>
+        <p>Dapatkan prediksi hasil panen beserta penjelasan 'mengapa' di balik angka tersebut.</p>
+        <form id="xai-yield-prediction-form">
+            <div class="input-grid">
+                <div><label for="xai-nitrogen">Nitrogen (N) (kg/ha):</label><input type="number" id="xai-nitrogen" step="any" placeholder="Contoh: 138" required></div>
+                <div><label for="xai-phosphorus">Fosfor (P) (kg/ha):</label><input type="number" id="xai-phosphorus" step="any" placeholder="Contoh: 165" required></div>
+                <div><label for="xai-potassium">Kalium (K) (kg/ha):</label><input type="number" id="xai-potassium" step="any" placeholder="Contoh: 339" required></div>
+                <div><label for="xai-temperature">Suhu (°C):</label><input type="number" id="xai-temperature" step="any" placeholder="Contoh: 21" required></div>
+                <div><label for="xai-rainfall">Curah Hujan (mm):</label><input type="number" id="xai-rainfall" step="any" placeholder="Contoh: 487" required></div>
+                <div><label for="xai-ph">pH Tanah:</label><input type="number" id="xai-ph" step="any" placeholder="Contoh: 6.5" required></div>
+            </div>
+            <button type="submit">Buat Prediksi & Analisis</button>
+        </form>
+        <div id="result-xai-yield" class="result-box" style="display:none;"></div>
+    </div>
+
     <script>
-        // Fungsi global untuk mengelola SEMUA tab di berbagai modul
-        function openTab(evt, tabName, element) {
+        // Fungsi global untuk mengelola tab
+        function openTab(evt, tabName, element) { 
             const moduleDiv = element.closest('.module');
             if (!moduleDiv) return;
-
             const tabcontent = moduleDiv.getElementsByClassName("tab-content");
-            for (let i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-
+            for (let i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; }
             const tablinks = moduleDiv.getElementsByClassName("tab-button");
-            for (let i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-
+            for (let i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); }
             const targetTab = moduleDiv.querySelector(`#${tabName}`);
-            if (targetTab) {
-                 targetTab.style.display = "block";
-            }
+            if (targetTab) { targetTab.style.display = "block"; }
             evt.currentTarget.className += " active";
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            const baseUrl = window.location.origin;
+            const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+
+            // --- Logika untuk Ticker Harga ---
+            const tickerContent = document.getElementById('price-ticker-content');
+            async function fetchTickerData() {
+                try {
+                    const response = await fetch(`${baseUrl}/get-ticker-prices`);
+                    const responseData = await response.json();
+                    if (responseData.success) {
+                        let tickerHtml = '';
+                        const tickerItems = [...responseData.data, ...responseData.data];
+                        tickerItems.forEach(item => {
+                            tickerHtml += `<div class="ticker-item"><span class="name">${item.name}:</span><span class="price">${formatRupiah(item.price)}/${item.unit}</span></div>`;
+                        });
+                        tickerContent.innerHTML = tickerHtml;
+                    }
+                } catch (error) { console.error("Gagal memuat data ticker:", error); }
+            }
+            fetchTickerData();
+            setInterval(fetchTickerData, 60000);
+
             // --- Logika untuk Modul 1 (Analisis BWD) ---
-            const formBwd = document.getElementById('upload-form');
-            const fileInput = document.getElementById('file-input');
-            const resultBwdDiv = document.getElementById('result-bwd');
-            const bwdInput = document.getElementById('bwd-input');
+            const formBwd = document.getElementById('upload-form'), resultBwdDiv = document.getElementById('result-bwd'), bwdInput = document.getElementById('bwd-input');
             formBwd.addEventListener('submit', async (event) => {
                 event.preventDefault();
                 resultBwdDiv.innerHTML = '<p>Menganalisis gambar...</p>';
-                const formData = new FormData();
-                if (fileInput.files.length === 0) {
-                    resultBwdDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Silakan pilih file gambar terlebih dahulu.</p>`;
-                    return;
-                }
-                formData.append('file', fileInput.files[0]);
+                const formData = new FormData(formBwd);
                 try {
-                    const response = await fetch('/analyze', { method: 'POST', body: formData });
+                    const response = await fetch(`${baseUrl}/analyze`, { method: 'POST', body: formData });
                     const data = await response.json();
                     if (data.success) {
                         resultBwdDiv.innerHTML = `<p><strong>Skor BWD:</strong> ${data.bwd_score} | <strong>Kepercayaan:</strong> ${data.confidence_percent}%</p>`;
                         bwdInput.value = data.bwd_score;
-                    } else {
-                        resultBwdDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${data.message || data.error}</p>`;
-                    }
-                } catch (error) {
-                    resultBwdDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Tidak dapat terhubung ke server.</p>`;
-                }
+                    } else { resultBwdDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${data.message || data.error}</p>`; }
+                } catch (error) { resultBwdDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Gagal terhubung.</p>`; }
             });
 
             // --- Logika untuk Modul 2 (Rekomendasi Pupuk) ---
-            const formRec = document.getElementById('recommendation-form');
-            const resultRecDiv = document.getElementById('result-recommendation');
+            const formRec = document.getElementById('recommendation-form'), resultRecDiv = document.getElementById('result-recommendation');
             formRec.addEventListener('submit', async (event) => {
                 event.preventDefault();
                 resultRecDiv.innerHTML = '<p>Menghitung rekomendasi...</p>';
-                const requestData = {
-                    ph_tanah: document.getElementById('ph-input').value,
-                    skor_bwd: bwdInput.value,
-                    kelembaban_tanah: document.getElementById('moisture-input').value,
-                    umur_tanaman_hari: document.getElementById('age-input').value,
-                };
+                const requestData = { ph_tanah: formRec.querySelector('#ph-input').value, skor_bwd: bwdInput.value, kelembaban_tanah: formRec.querySelector('#moisture-input').value, umur_tanaman_hari: formRec.querySelector('#age-input').value, };
                 try {
-                    const response = await fetch('/recommendation', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(requestData)
-                    });
+                    const response = await fetch(`${baseUrl}/recommendation`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestData) });
                     const data = await response.json();
                     if (data.success) {
-                        let htmlResult = `<h3>${data.recommendation.rekomendasi_utama}</h3>`;
-                        htmlResult += '<ul>';
-                        for (const [key, value] of Object.entries(data.recommendation.rekomendasi_pupuk_ml)) {
-                            htmlResult += `<li>${key}: ${value}</li>`;
-                        }
-                        htmlResult += '</ul>';
+                        let html = `<h3>${data.recommendation.rekomendasi_utama}</h3><ul class="item-list">`;
+                        for (const [key, value] of Object.entries(data.recommendation.rekomendasi_pupuk_ml)) { html += `<li class="fertilizer-item"><span class="item-name">${key}</span><span class="item-value">${value}</li>`; }
+                        html += '</ul>';
                         if (data.recommendation.peringatan_penting.length > 0) {
-                            htmlResult += '<h4 style="color: orange;">Peringatan Penting:</h4><ul>';
-                            data.recommendation.peringatan_penting.forEach(warning => {
-                                htmlResult += `<li>${warning}</li>`;
-                            });
-                            htmlResult += '</ul>';
+                            html += '<h4 style="color: orange;">Peringatan:</h4><ul>';
+                            data.recommendation.peringatan_penting.forEach(w => { html += `<li>${w}</li>`; });
+                            html += '</ul>';
                         }
-                        resultRecDiv.innerHTML = htmlResult;
-                    } else {
-                        resultRecDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${data.error}</p>`;
-                    }
-                } catch (error) {
-                    resultRecDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Tidak dapat terhubung ke server.</p>`;
-                }
+                        resultRecDiv.innerHTML = html;
+                    } else { resultRecDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${data.error}</p>`; }
+                } catch (error) { resultRecDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Gagal terhubung.</p>`; }
             });
 
             // --- Logika untuk Modul 3 (Analisis NPK Manual) ---
-            const formNpk = document.getElementById('npk-form');
-            const resultNpkDiv = document.getElementById('result-npk');
+            const formNpk = document.getElementById('npk-form'), resultNpkDiv = document.getElementById('result-npk');
             formNpk.addEventListener('submit', async (event) => {
                 event.preventDefault();
                 resultNpkDiv.innerHTML = '<p>Menganalisis data NPK...</p>';
+                const requestData = { n_value: formNpk.querySelector('#n-input').value, p_value: formNpk.querySelector('#p-input').value, k_value: formNpk.querySelector('#k-input').value, };
+                try {
+                    const response = await fetch(`${baseUrl}/analyze-npk`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestData) });
+                    const data = await response.json();
+                    if (data.success) {
+                        let html = '<h3>Hasil Analisis Tanah:</h3><ul class="item-list">';
+                        const labels = { 'Rendah': 'label-rendah', 'Optimal': 'label-optimal', 'Berlebih': 'label-berlebih' };
+                        for (const [n, r] of Object.entries(data.analysis)) { html += `<li><strong>${n}:</strong> <span class="label ${labels[r.label]||''}">${r.label}</span><br><small>${r.rekomendasi}</small></li>`; }
+                        html += '</ul><p><small>Data ini telah disimpan.</small></p>';
+                        resultNpkDiv.innerHTML = html;
+                    } else { resultNpkDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${data.error}</p>`; }
+                } catch (error) { resultNpkDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Gagal terhubung.</p>`; }
+            });
+
+            // --- Logika untuk Modul 4 (Intelijen Harga Pasar) ---
+            const priceForm = document.getElementById('price-form'), resultPriceDiv = document.getElementById('result-price');
+            priceForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                resultPriceDiv.innerHTML = '<p>Mengambil data harga...</p>';
+                try {
+                    const response = await fetch(`${baseUrl}/get-prices`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ commodity: priceForm.querySelector('#price-commodity-select').value }) });
+                    const data = await response.json();
+                    if (data.success) {
+                        let html = `<h3>Data Harga: ${data.data.name}</h3><ul class="item-list">`;
+                        for (const [m, p] of Object.entries(data.data.prices)) { html += `<li class="price-item"><span class="item-name">${m}</span><span class="item-value">${formatRupiah(p)} / ${data.data.unit}</span></li>`; }
+                        html += '</ul>';
+                        resultPriceDiv.innerHTML = html;
+                    } else { resultPriceDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${data.error}</p>`; }
+                } catch (error) { resultPriceDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Gagal terhubung.</p>`; }
+            });
+
+            // --- Logika untuk Modul 5 (Basis Pengetahuan Budidaya) ---
+            const knowledgeSelect = document.getElementById('knowledge-commodity-select'), resultKnowledgeDiv = document.getElementById('result-knowledge');
+            async function fetchKnowledge() {
+                if (!knowledgeSelect.value) return;
+                resultKnowledgeDiv.innerHTML = '<p>Mengambil data...</p>';
+                try {
+                    const response = await fetch(`${baseUrl}/get-knowledge`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ commodity: knowledgeSelect.value }) });
+                    const data = await response.json();
+                    if (data.success) {
+                        const kd = data.data;
+                        let html = `<h3>${kd.icon} ${kd.name}</h3><div class="tabs">`;
+                        Object.keys(kd.data).forEach((t, i) => { html += `<button class="tab-button ${i===0?'active':''}" onclick="openTab(event, 'k-${t.replace(/\s+/g,'-')}', this)">${t}</button>`; });
+                        html += '</div>';
+                        Object.entries(kd.data).forEach(([t, c], i) => {
+                            html += `<div id="k-${t.replace(/\s+/g,'-')}" class="tab-content ${i===0?'active':''}"><ul>`;
+                            c.forEach(item => { html += `<li>${item}</li>`; });
+                            html += '</ul></div>';
+                        });
+                        resultKnowledgeDiv.innerHTML = html;
+                    } else { resultKnowledgeDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${data.error}</p>`; }
+                } catch (error) { resultKnowledgeDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Gagal terhubung.</p>`; }
+            }
+            knowledgeSelect.addEventListener('change', fetchKnowledge);
+
+            // --- Logika untuk Modul 7 (Kalkulator Pupuk Holistik) ---
+            const fertForm = document.getElementById('fertilizer-calculator-form'), resultFertDiv = document.getElementById('result-fertilizer');
+            fertForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                resultFertDiv.innerHTML = '<p>Menghitung kebutuhan...</p>';
+                const requestData = { commodity: fertForm.querySelector('#fert-commodity-select').value, area_sqm: fertForm.querySelector('#area-input').value, ph_tanah: fertForm.querySelector('#fert-ph-input').value };
+                try {
+                    const response = await fetch(`${baseUrl}/calculate-fertilizer`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestData) });
+                    const data = await response.json();
+                    if (data.success) {
+                        const { data: d, commodity_name: cn, area_sqm: a } = data;
+                        let html = `<h3>Rekomendasi Pupuk untuk ${cn}</h3><p>Lahan <strong>${a} m²</strong> dengan pH <strong>${requestData.ph_tanah}</strong>:</p>`;
+                        const sections = { 'Perbaikan Tanah': d.perbaikan_tanah, 'Pupuk Organik': d.organik, 'Pupuk Anorganik': d.anorganik };
+                        for (const [title, content] of Object.entries(sections)) {
+                            if (content && Object.keys(content).length > 0) {
+                                html += `<h4>${title}:</h4><ul class="item-list">`;
+                                for (const [fert, amount] of Object.entries(content)) { html += `<li class="fertilizer-item"><span class="item-name">${fert}</span><span class="item-value">${amount} kg</span></li>`; }
+                                html += '</ul>';
+                            }
+                        }
+                        html += '<br><small>Catatan: Rekomendasi pupuk dasar. Sesuaikan dengan kondisi tanah dan fase pertumbuhan.</small>';
+                        resultFertDiv.innerHTML = html;
+                    } else { resultFertDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${data.error}</p>`; }
+                } catch (error) { resultFertDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Gagal terhubung.</p>`; }
+            });
+
+            // --- Logika untuk Modul 8 (Pustaka Dokumen) ---
+            const pdfForm = document.getElementById('pdf-upload-form'), pdfStatus = document.getElementById('pdf-upload-status'), pdfList = document.getElementById('pdf-list');
+            async function fetchPdfs() {
+                pdfList.innerHTML = '<p>Memuat daftar...</p>';
+                try {
+                    const response = await fetch(`${baseUrl}/get-pdfs`);
+                    const data = await response.json();
+                    if (data.success && data.files) {
+                        if (data.files.length > 0) {
+                            let html = '<ul class="item-list">';
+                            data.files.forEach(f => { html += `<li class="pdf-item"><a href="${baseUrl}/view-pdf/${f}" target="_blank">${f}</a></li>`; });
+                            html += '</ul>';
+                            pdfList.innerHTML = html;
+                        } else { pdfList.innerHTML = '<p>Belum ada dokumen.</p>'; }
+                    } else { pdfList.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`; }
+                } catch (error) { pdfList.innerHTML = `<p style="color: red;">Gagal terhubung.</p>`; }
+            }
+            fetchPdfs();
+            pdfForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                pdfStatus.style.display = 'block';
+                pdfStatus.innerHTML = '<p>Mengunggah...</p>';
+                const formData = new FormData(pdfForm);
+                try {
+                    const response = await fetch(`${baseUrl}/upload-pdf`, { method: 'POST', body: formData });
+                    const data = await response.json();
+                    if (data.success) {
+                        pdfStatus.innerHTML = `<p style="color: green;">Sukses: ${data.message}</p>`;
+                        pdfForm.reset();
+                        fetchPdfs();
+                    } else { pdfStatus.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`; }
+                } catch (error) { pdfStatus.innerHTML = `<p style="color: red;">Gagal terhubung.</p>`; }
+            });
+
+            // --- Logika untuk Modul 9 (Rekomendasi Terpadu) ---
+            const intForm = document.getElementById('integrated-recommendation-form'), resultInt = document.getElementById('result-integrated');
+            intForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                resultInt.innerHTML = '<p>Menyusun rekomendasi...</p>';
+                const requestData = { ketinggian: intForm.querySelector('#ketinggian-select').value, iklim: intForm.querySelector('#iklim-select').value, fase: intForm.querySelector('#fase-select').value, masalah: intForm.querySelector('#masalah-select').value };
+                try {
+                    const response = await fetch(`${baseUrl}/get-integrated-recommendation`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestData) });
+                    const data = await response.json();
+                    if (data.success) {
+                        let html = '<h3>Rekomendasi Strategis:</h3>';
+                        html += `<h4>🌱 Pemilihan Bibit</h4><p>${data.data.bibit}</p>`;
+                        html += `<h4>🌿 Pemupukan</h4><p>${data.data.pemupukan}</p>`;
+                        html += `<h4>🛡️ Penyemprotan</h4><p>${data.data.penyemprotan}</p>`;
+                        resultInt.innerHTML = html;
+                    } else { resultInt.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`; }
+                } catch (error) { resultInt.innerHTML = `<p style="color: red;">Gagal terhubung.</p>`; }
+            });
+
+            // --- Logika untuk Modul 10 (Strategi Penyemprotan) ---
+            const sprayForm = document.getElementById('spraying-strategy-form'), resultSpray = document.getElementById('result-spraying');
+            sprayForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                resultSpray.innerHTML = '<p>Menyusun rencana...</p>';
+                try {
+                    const response = await fetch(`${baseUrl}/get-spraying-recommendation`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pest: sprayForm.querySelector('#pest-select').value }) });
+                    const data = await response.json();
+                    if (data.success) {
+                        const d = data.data;
+                        let html = `<h3>${d.strategy.name}</h3><p>${d.strategy.description}</p>`;
+                        d.strategy.cycles.forEach(c => { html += `<div class="strategy-cycle"><h4>${c.weeks}: ${c.level}</h4><p><strong>Bahan Aktif:</strong> ${c.active_ingredient}<br><strong>Grup IRAC:</strong> ${c.irac_code}<br><strong>SOP:</strong> ${c.sop}</p></div>`; });
+                        html += `<h3>${d.protocol.title}</h3><ul>`;
+                        d.protocol.steps.forEach(s => { html += `<li>${s}</li>`; });
+                        html += '</ul>';
+                        resultSpray.innerHTML = html;
+                    } else { resultSpray.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`; }
+                } catch (error) { resultSpray.innerHTML = `<p style="color: red;">Gagal terhubung.</p>`; }
+            });
+
+            // --- Logika untuk Modul 11 (Grafik Harga) ---
+            const histPriceForm = document.getElementById('historical-price-form'), resultHistPrice = document.getElementById('result-historical-price'), chartCanvas = document.getElementById('price-chart').getContext('2d');
+            let priceChart;
+            histPriceForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                resultHistPrice.querySelector('p').textContent = 'Memvisualisasikan data...';
+                const requestData = { commodity: histPriceForm.querySelector('#historical-commodity-select').value, range: histPriceForm.querySelector('#time-range-select').value };
+                try {
+                    const response = await fetch(`${baseUrl}/get-historical-prices`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestData) });
+                    const data = await response.json();
+                    if (data.success) {
+                        resultHistPrice.querySelector('p').textContent = `Grafik tren harga:`;
+                        if (priceChart) priceChart.destroy();
+                        priceChart = new Chart(chartCanvas, {
+                            type: 'line',
+                            data: {
+                                labels: data.labels,
+                                datasets: [{ label: 'Harga (Rp)', data: data.prices, borderColor: 'rgba(46, 125, 50, 1)', backgroundColor: 'rgba(76, 175, 80, 0.2)', borderWidth: 2, fill: true, tension: 0.3 }]
+                            },
+                            options: { responsive: true, scales: { y: { ticks: { callback: (v) => formatRupiah(v) } } } }
+                        });
+                    } else { resultHistPrice.querySelector('p').textContent = `Error: ${data.error}`; }
+                } catch (error) { resultHistPrice.querySelector('p').textContent = 'Error: Gagal terhubung.'; }
+            });
+            
+            // --- Logika untuk Modul 12 (Ensiklopedia Komoditas) ---
+            const guideForm = document.getElementById('guide-form'), resultGuideDiv = document.getElementById('result-guide');
+            guideForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                resultGuideDiv.style.display = 'block';
+                resultGuideDiv.innerHTML = '<p>Memuat panduan...</p>';
+                try {
+                    const response = await fetch(`${baseUrl}/get-commodity-guide`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ commodity: guideForm.querySelector('#guide-commodity-select').value }) });
+                    const data = await response.json();
+                    if (data.success) {
+                        const gd = data.data;
+                        let html = `<h2>${gd.icon} Panduan Lengkap: ${gd.name}</h2><p>${gd.description}</p>`;
+                        html += '<div class="tabs">';
+                        html += `<button class="tab-button active" onclick="openTab(event, 'sop-budidaya', this)">SOP Budidaya</button>`;
+                        html += `<button class="tab-button" onclick="openTab(event, 'analisis-bisnis', this)">Analisis Bisnis</button>`;
+                        html += '</div>';
+                        html += `<div id="sop-budidaya" class="tab-content active">`;
+                        for (const [phase, steps] of Object.entries(gd.sop)) {
+                            html += `<h3>${phase}</h3><ul>`;
+                            steps.forEach(step => { html += `<li>${step}</li>`; });
+                            html += `</ul>`;
+                        }
+                        html += `</div>`;
+                        const analysis = gd.business_analysis;
+                        html += `<div id="analisis-bisnis" class="tab-content"><h3>${analysis.title}</h3><p><strong>Asumsi:</strong> Lahan ${analysis.assumptions.Luas_Lahan}, populasi ${analysis.assumptions.Populasi_Tanaman}.</p>`;
+                        html += `<h4>Estimasi Biaya Produksi</h4><table><tr><th>Komponen</th><th>Kebutuhan</th><th style="text-align:right;">Biaya</th></tr>`;
+                        let totalCost = 0;
+                        analysis.costs.forEach(i => { html += `<tr><td>${i.item}</td><td>${i.amount}</td><td class="cost">${formatRupiah(i.cost)}</td></tr>`; totalCost += i.cost; });
+                        html += `<tr><td colspan="2" class="total-cost"><strong>Total Biaya</strong></td><td class="total-cost"><strong>${formatRupiah(totalCost)}</strong></td></tr></table>`;
+                        html += `<h4>Simulasi Pendapatan</h4><table><tr><th>Skenario Harga</th><th>Panen Konservatif</th><th>Panen Optimal</th></tr>`;
+                        analysis.revenue_scenarios.forEach(s => {
+                            const revCons = analysis.yield_potential[0].total_yield_kg * s.price_per_kg;
+                            const revOpt = analysis.yield_potential[1].total_yield_kg * s.price_per_kg;
+                            html += `<tr><td>${s.price_level} (${formatRupiah(s.price_per_kg)}/kg)</td><td>${formatRupiah(revCons)}</td><td>${formatRupiah(revOpt)}</td></tr>`;
+                        });
+                        html += `</table><br><small><strong>Disclaimer:</strong> Angka ini adalah estimasi.</small></div>`;
+                        resultGuideDiv.innerHTML = html;
+                    } else { resultGuideDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`; }
+                } catch (error) { resultGuideDiv.innerHTML = `<p style="color: red;">Gagal terhubung.</p>`; }
+            });
+
+            // --- Logika untuk Modul 13 (Pusat Pengetahuan pH) ---
+            const showPhBtn = document.getElementById('show-ph-info-btn'), resultPhDiv = document.getElementById('result-ph-info');
+            showPhBtn.addEventListener('click', async (event) => {
+                event.preventDefault();
+                if (resultPhDiv.style.display === 'block') {
+                    resultPhDiv.style.display = 'none';
+                    showPhBtn.textContent = 'Tampilkan Informasi Lengkap';
+                    return;
+                }
+                resultPhDiv.style.display = 'block';
+                showPhBtn.textContent = 'Sembunyikan Informasi';
+                resultPhDiv.innerHTML = '<p>Memuat informasi...</p>';
+                try {
+                    const response = await fetch(`${baseUrl}/get-ph-info`);
+                    const data = await response.json();
+                    if (data.success) {
+                        const pd = data.data;
+                        let html = `<h2>${pd.icon} ${pd.title}</h2><div class="tabs">`;
+                        Object.keys(pd.sections).forEach((k, i) => { html += `<button class="tab-button ${i===0?'active':''}" onclick="openTab(event, 'ph-${k.replace(/[^a-zA-Z0-9]/g, '-')}', this)">${pd.sections[k].title}</button>`; });
+                        html += '</div>';
+                        Object.entries(pd.sections).forEach(([k, s], i) => {
+                            html += `<div id="ph-${k.replace(/[^a-zA-Z0-9]/g, '-')}" class="tab-content ${i===0?'active':''}"><ul>`;
+                            s.content.forEach(item => { html += `<li>${item}</li>`; });
+                            html += `</ul></div>`;
+                        });
+                        resultPhDiv.innerHTML = html;
+                    } else { resultPhDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`; }
+                } catch (error) { resultPhDiv.innerHTML = `<p style="color: red;">Gagal terhubung.</p>`; }
+            });
+
+            // --- Logika untuk Modul 14 (Rekomendasi Tanaman) ---
+            const cropForm = document.getElementById('crop-recommendation-form'), resultCropDiv = document.getElementById('result-crop');
+            cropForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                resultCropDiv.innerHTML = '<p>Menganalisis data dan mencari rekomendasi terbaik...</p>';
                 const requestData = {
-                    n_value: document.getElementById('n-input').value,
-                    p_value: document.getElementById('p-input').value,
-                    k_value: document.getElementById('k-input').value,
+                    n_value: document.getElementById('crop-n-input').value,
+                    p_value: document.getElementById('crop-p-input').value,
+                    k_value: document.getElementById('crop-k-input').value,
+                    temperature: document.getElementById('crop-temp-input').value,
+                    humidity: document.getElementById('crop-humidity-input').value,
+                    ph: document.getElementById('crop-ph-input').value,
+                    rainfall: document.getElementById('crop-rainfall-input').value
                 };
                 try {
-                    const response = await fetch('/analyze-npk', {
+                    const response = await fetch(`${baseUrl}/recommend-crop`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestData)
+                    });
+                    const responseData = await response.json();
+                    if (responseData.success) {
+                        resultCropDiv.innerHTML = `<h3>Rekomendasi Tanaman Optimal</h3><p style="font-size: 1.5em; text-align: center; font-weight: bold; color: var(--primary-color);">${responseData.recommended_crop}</p><p><small>Rekomendasi ini dihasilkan oleh model Machine Learning berdasarkan data yang Anda masukkan.</small></p>`;
+                    } else {
+                        resultCropDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${responseData.error}</p>`;
+                    }
+                } catch (error) {
+                    resultCropDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Tidak dapat terhubung ke server.</p>`;
+                }
+            });
+            
+            // --- Logika untuk Modul 15 (Prediksi Panen) ---
+            const yieldForm = document.getElementById('yield-prediction-form'), resultYieldDiv = document.getElementById('result-yield');
+            yieldForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                resultYieldDiv.innerHTML = '<p>Menganalisis data dan membuat prediksi...</p>';
+                const requestData = {
+                    nitrogen: document.getElementById('yield-n-input').value,
+                    phosphorus: document.getElementById('yield-p-input').value,
+                    potassium: document.getElementById('yield-k-input').value,
+                    temperature: document.getElementById('yield-temp-input').value,
+                    rainfall: document.getElementById('yield-rainfall-input').value,
+                    ph: document.getElementById('yield-ph-input').value,
+                };
+                try {
+                    const response = await fetch(`${baseUrl}/predict-yield`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestData)
+                    });
+                    const responseData = await response.json();
+                    if (responseData.success) {
+                        resultYieldDiv.innerHTML = `<h3>Estimasi Potensi Hasil Panen</h3><p style="font-size: 1.8em; text-align: center; font-weight: bold; color: var(--primary-color);">${responseData.predicted_yield_ton_ha} ton/ha</p><p><small>Estimasi ini dihasilkan oleh model Machine Learning berdasarkan data yang Anda masukkan.</small></p>`;
+                    } else {
+                        resultYieldDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${responseData.error}</p>`;
+                    }
+                } catch (error) {
+                    resultYieldDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Tidak dapat terhubung ke server.</p>`;
+                }
+            });
+             // --- Logika BARU untuk Modul 16 (Prediksi Panen XAI) ---
+            const xaiYieldForm = document.getElementById('xai-yield-prediction-form');
+            const resultXaiYieldDiv = document.getElementById('result-xai-yield');
+            let importanceChart; 
+            xaiYieldForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                resultXaiYieldDiv.style.display = 'block';
+                resultXaiYieldDiv.innerHTML = '<p>Menganalisis data dengan XAI...</p>';
+
+                const requestData = {
+                    nitrogen: document.getElementById('xai-nitrogen').value,
+                    phosphorus: document.getElementById('xai-phosphorus').value,
+                    potassium: document.getElementById('xai-potassium').value,
+                    temperature: document.getElementById('xai-temperature').value,
+                    rainfall: document.getElementById('xai-rainfall').value,
+                    ph: document.getElementById('xai-ph').value,
+                };
+
+                try {
+                    const response = await fetch(`${baseUrl}/predict-yield-advanced`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(requestData)
                     });
                     const data = await response.json();
+
                     if (data.success) {
-                        let htmlResult = '<h3>Hasil Analisis Tanah:</h3><ul>';
-                        const labelClasses = { 'Rendah': 'label-rendah', 'Optimal': 'label-optimal', 'Berlebih': 'label-berlebih' };
-                        for (const [nutrient, result] of Object.entries(data.analysis)) {
-                            const labelClass = labelClasses[result.label] || '';
-                            htmlResult += `<li class="knowledge-item"><strong>${nutrient}:</strong> <span class="label ${labelClass}">${result.label}</span></li><small>${result.rekomendasi}</small>`;
+                        if (importanceChart) {
+                            importanceChart.destroy();
                         }
-                        htmlResult += '</ul><p><small>Data ini telah disimpan.</small></p>';
-                        resultNpkDiv.innerHTML = htmlResult;
-                    } else {
-                        resultNpkDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${data.error}</p>`;
-                    }
-                } catch (error) {
-                    resultNpkDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Tidak dapat terhubung ke server.</p>`;
-                }
-            });
 
-            // --- Logika untuk Modul 4 (Intelijen Harga Pasar) ---
-            const priceForm = document.getElementById('price-form');
-            const priceCommoditySelect = document.getElementById('price-commodity-select');
-            const resultPriceDiv = document.getElementById('result-price');
-            priceForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
-                resultPriceDiv.innerHTML = '<p>Mengambil data harga...</p>';
-                const requestData = { commodity: priceCommoditySelect.value };
-                try {
-                    const response = await fetch('/get-prices', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(requestData)
-                    });
-                    const responseData = await response.json();
-                    if (responseData.success) {
-                        const priceData = responseData.data;
-                        const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
-                        let htmlResult = `<h3>Data Harga: ${priceData.name}</h3><ul>`;
-                        for (const [market, price] of Object.entries(priceData.prices)) {
-                            htmlResult += `<li class="price-item"><span class="item-name">${market}</span><span class="item-value">${formatRupiah(price)} / ${priceData.unit}</span></li>`;
-                        }
-                        htmlResult += '</ul>';
-                        resultPriceDiv.innerHTML = htmlResult;
-                    } else {
-                        resultPriceDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${responseData.error}</p>`;
-                    }
-                } catch (error) {
-                    resultPriceDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Tidak dapat terhubung ke server.</p>`;
-                }
-            });
-
-            // --- Logika untuk Modul 5 (Basis Pengetahuan Budidaya) ---
-            const knowledgeSelect = document.getElementById('knowledge-commodity-select');
-            const resultKnowledgeDiv = document.getElementById('result-knowledge');
-            async function fetchKnowledge() {
-                const selectedCommodity = knowledgeSelect.value;
-                if (!selectedCommodity) return;
-                resultKnowledgeDiv.innerHTML = '<p>Mengambil data...</p>';
-                try {
-                    const response = await fetch('/get-knowledge', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ commodity: selectedCommodity })
-                    });
-                    const responseData = await response.json();
-                    if (responseData.success) {
-                        const knowledgeData = responseData.data;
-                        let htmlResult = `<h3>${knowledgeData.icon} ${knowledgeData.name}</h3>`;
-                        htmlResult += '<div class="tabs">';
-                        Object.keys(knowledgeData.data).forEach((tabName, index) => {
-                            htmlResult += `<button class="tab-button ${index === 0 ? 'active' : ''}" onclick="openTab(event, 'knowledge-${tabName.replace(/\s+/g, '-')}', this)">${tabName}</button>`;
-                        });
-                        htmlResult += '</div>';
-                        Object.entries(knowledgeData.data).forEach(([tabName, content], index) => {
-                            htmlResult += `<div id="knowledge-${tabName.replace(/\s+/g, '-')}" class="tab-content ${index === 0 ? 'active' : ''}"><ul>`;
-                            content.forEach(item => { htmlResult += `<li>${item}</li>`; });
-                            htmlResult += '</ul></div>';
-                        });
-                        resultKnowledgeDiv.innerHTML = htmlResult;
-                    } else {
-                        resultKnowledgeDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${responseData.error}</p>`;
-                    }
-                } catch (error) {
-                     resultKnowledgeDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Tidak dapat terhubung ke server.</p>`;
-                }
-            }
-            knowledgeSelect.addEventListener('change', fetchKnowledge);
-            
-            // --- Logika BARU untuk Modul 7 (Kalkulator Pupuk Holistik) ---
-            const fertCalculatorForm = document.getElementById('fertilizer-calculator-form');
-            const resultFertilizerDiv = document.getElementById('result-fertilizer');
-            fertCalculatorForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
-                resultFertilizerDiv.innerHTML = '<p>Menghitung kebutuhan pupuk...</p>';
-                const requestData = {
-                    commodity: document.getElementById('fert-commodity-select').value,
-                    area_sqm: document.getElementById('area-input').value,
-                    ph_tanah: document.getElementById('fert-ph-input').value
-                };
-                try {
-                    const response = await fetch('/calculate-fertilizer', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(requestData)
-                    });
-                    const responseData = await response.json();
-                    if (responseData.success) {
-                        const { data, commodity_name, area_sqm } = responseData;
-                        let htmlResult = `<h3>Rekomendasi Pupuk untuk ${commodity_name}</h3>`;
-                        htmlResult += `<p>Lahan <strong>${area_sqm} m²</strong> dengan pH <strong>${requestData.ph_tanah}</strong>:</p>`;
-
-                        if (data.perbaikan_tanah && Object.keys(data.perbaikan_tanah).length > 0) {
-                            htmlResult += '<h4>Perbaikan Tanah:</h4><ul>';
-                            for (const [fertilizer, amount] of Object.entries(data.perbaikan_tanah)) {
-                                htmlResult += `<li class="fertilizer-item"><span class="item-name">${fertilizer}</span><span class="item-value">${amount} kg</span></li>`;
-                            }
-                            htmlResult += '</ul>';
+                        let htmlResult = `
+                            <h3>Hasil Prediksi & Analisis</h3>
+                            <p style="font-size: 1.8em; text-align: center; font-weight: bold; color: var(--primary-color);">
+                                Estimasi Panen: ${data.predicted_yield_ton_ha} ton/ha
+                            </p>
+                            
+                            <h4>Faktor Pendorong & Penghambat (Analisis SHAP)</h4>
+                            <p>Analisis ini menjelaskan mengapa prediksi Anda berbeda dari rata-rata (${data.base_value} ton/ha).</p>
+                            <ul class="item-list">`;
+                        
+                        for(const [feature, value] of Object.entries(data.shap_values)) {
+                            const change = value / 1000; 
+                            const direction = change >= 0 ? 'Meningkatkan' : 'Menurunkan';
+                            const cssClass = change >= 0 ? 'shap-positive' : 'shap-negative';
+                            htmlResult += `<li class="shap-item"><span>${feature}</span> <span class="${cssClass}">${direction} estimasi sebesar ${Math.abs(change).toFixed(2)} ton/ha</span></li>`;
                         }
                         
-                        if (data.organik && Object.keys(data.organik).length > 0) {
-                            htmlResult += '<h4>Pupuk Organik:</h4><ul>';
-                            for (const [fertilizer, amount] of Object.entries(data.organik)) {
-                                htmlResult += `<li class="fertilizer-item"><span class="item-name">${fertilizer}</span><span class="item-value">${amount} kg</span></li>`;
-                            }
-                            htmlResult += '</ul>';
-                        }
+                        htmlResult += `</ul>
+                            
+                            <h4>Faktor Paling Berpengaruh (Secara Umum)</h4>
+                            <canvas id="importance-chart"></canvas>
+                        `;
 
-                         if (data.anorganik && Object.keys(data.anorganik).length > 0) {
-                            htmlResult += '<h4>Pupuk Anorganik:</h4><ul>';
-                            for (const [fertilizer, amount] of Object.entries(data.anorganik)) {
-                                htmlResult += `<li class="fertilizer-item"><span class="item-name">${fertilizer}</span><span class="item-value">${amount} kg</span></li>`;
-                            }
-                            htmlResult += '</ul>';
-                        }
+                        resultXaiYieldDiv.innerHTML = htmlResult;
 
-                        htmlResult += '<br><small>Catatan: Ini adalah rekomendasi pupuk dasar. Sesuaikan dengan kondisi tanah dan fase pertumbuhan tanaman.</small>';
-                        resultFertilizerDiv.innerHTML = htmlResult;
+                        const chartCanvas = document.getElementById('importance-chart').getContext('2d');
+                        const labels = data.feature_importances.map(item => item[0]);
+                        const values = data.feature_importances.map(item => item[1]);
+                        
+                        importanceChart = new Chart(chartCanvas, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Tingkat Kepentingan',
+                                    data: values,
+                                    backgroundColor: 'rgba(76, 175, 80, 0.6)',
+                                    borderColor: 'rgba(46, 125, 50, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                indexAxis: 'y',
+                                responsive: true,
+                                plugins: {
+                                    legend: { display: false },
+                                    title: { display: true, text: 'Faktor yang Paling Memengaruhi Hasil Panen' }
+                                }
+                            }
+                        });
 
                     } else {
-                        resultFertilizerDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${responseData.error}</p>`;
+                        resultXaiYieldDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${data.error}</p>`;
                     }
                 } catch (error) {
-                    resultFertilizerDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Tidak dapat terhubung ke server.</p>`;
+                    console.error('Error fetching XAI prediction:', error);
+                    resultXaiYieldDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Tidak dapat terhubung ke server.</p>`;
                 }
             });
         });
