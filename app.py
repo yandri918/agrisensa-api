@@ -542,7 +542,7 @@ def predict_yield_advanced_endpoint():
 def calculate_fertilizer_bags_endpoint():
     try:
         data = request.get_json()
-        nutrient_needed = data.get('nutrient_needed') # 'N', 'P', atau 'K'
+        nutrient_needed = data.get('nutrient_needed')
         nutrient_amount_kg = float(data.get('nutrient_amount_kg', 0))
         fertilizer_type = data.get('fertilizer_type')
 
@@ -574,12 +574,55 @@ def calculate_fertilizer_bags_endpoint():
 
 @app.route('/get-diagnostic-tree', methods=['GET'])
 def get_diagnostic_tree_endpoint():
-    """Menyajikan seluruh struktur Decision Tree ke frontend."""
     try:
         return jsonify({'success': True, 'data': DECISION_TREE_KNOWLEDGE_BASE})
     except Exception as e:
         app.logger.error(f"Error di /get-diagnostic-tree: {e}", exc_info=True)
         return jsonify({'success': False, 'error': 'Kesalahan internal saat memuat data diagnostik.'}), 500
+
+@app.route('/generate-yield-plan', methods=['POST'])
+def generate_yield_plan_endpoint():
+    try:
+        data = request.get_json()
+        commodity = data.get('commodity')
+        target_yield_ton_ha = float(data.get('target_yield', 0))
+
+        if not commodity or target_yield_ton_ha <= 0:
+            return jsonify({'success': False, 'error': 'Input tidak valid.'}), 400
+
+        dataset_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'EDA_500.csv')
+        if not os.path.exists(dataset_path):
+            raise RuntimeError("Dataset EDA_500.csv tidak ditemukan.")
+        
+        df = pd.read_csv(dataset_path)
+        df['Yield'] = pd.to_numeric(df['Yield'], errors='coerce')
+        df.dropna(subset=['Yield'], inplace=True)
+        
+        target_yield_kg = target_yield_ton_ha * 1000
+        
+        best_match_row = df.iloc[(df['Yield'] - target_yield_kg).abs().argsort()[:1]]
+        
+        if best_match_row.empty:
+            return jsonify({'success': False, 'error': 'Tidak ditemukan data yang cocok untuk target panen tersebut.'})
+
+        result = best_match_row.iloc[0]
+        
+        plan = {
+            "Nitrogen (kg/ha)": round(float(result['Nitrogen']), 2),
+            "Phosphorus (kg/ha)": round(float(result['Phosphorus']), 2),
+            "Potassium (kg/ha)": round(float(result['Potassium']), 2),
+            "Temperature (°C)": round(float(result['Temperature']), 2),
+            "Rainfall (mm)": round(float(result['Rainfall']), 2),
+            "pH Tanah": round(float(result['pH']), 2),
+            "Hasil Panen Aktual dari Data": f"{round(float(result['Yield'])/1000, 2)} ton/ha"
+        }
+
+        return jsonify({'success': True, 'plan': plan})
+
+    except Exception as e:
+        app.logger.error(f"Error di /generate-yield-plan: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': 'Kesalahan internal saat membuat rencana panen.'}), 500
+
 
 # --- Menjalankan Aplikasi (Hanya untuk lokal) ---
 if __name__ == '__main__':

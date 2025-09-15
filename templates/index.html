@@ -34,9 +34,9 @@
         label { font-weight: 500; margin-bottom: 8px; display: block; }
         ul { padding-left: 20px; } li { margin-bottom: 10px; }
         .item-list { list-style-type: none; padding-left: 0; }
-        .price-item, .fertilizer-item, .pdf-item, .shap-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 12px 0; }
-        .item-name { font-weight: 500; }
-        .item-value { font-size: 1.1em; color: var(--primary-color); font-weight: 600; }
+        .price-item, .fertilizer-item, .pdf-item, .shap-item, .plan-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 12px 0; }
+        .item-name, .plan-item-label { font-weight: 500; }
+        .item-value, .plan-item-value { font-size: 1.1em; color: var(--primary-color); font-weight: 600; }
         .pdf-item a { text-decoration: none; color: var(--primary-color); font-weight: 500;}
         .pdf-item a:hover { text-decoration: underline; }
         .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 20px; flex-wrap: wrap; }
@@ -401,7 +401,7 @@
         </form>
         <div id="result-fertilizer-conversion" class="result-box"><p>Hasil perhitungan akan muncul di sini.</p></div>
     </div>
-
+    
     <!-- Modul 18: Diagnostik Gejala Cerdas -->
     <div class="module">
         <h2>🧑‍⚕️ Modul 18: Diagnostik Gejala Cerdas</h2>
@@ -409,6 +409,28 @@
         <button id="start-diagnostic-btn">Mulai Diagnostik</button>
         <div id="diagnostic-questions" class="result-box" style="display:none;"></div>
         <div id="diagnostic-result" class="result-box" style="display:none;"></div>
+    </div>
+
+    <!-- Modul 19: Perencana Hasil Panen (AI) -->
+    <div class="module">
+        <h2>🎯 Modul 19: Perencana Hasil Panen (AI)</h2>
+        <p>Tentukan target hasil panen Anda, dan biarkan AI menyusun resep kondisi lahan yang dibutuhkan untuk mencapainya.</p>
+        <form id="yield-plan-form">
+            <div class="input-grid">
+                <div>
+                    <label for="plan-commodity-select">Pilih Komoditas:</label>
+                    <select id="plan-commodity-select" required>
+                        <option value="umum" selected>Umum (Semua Tanaman)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="plan-target-yield-input">Target Hasil Panen (ton/ha):</label>
+                    <input type="number" id="plan-target-yield-input" step="any" placeholder="Contoh: 7.5" required>
+                </div>
+            </div>
+            <button type="submit" class="mt-4">Buat Rencana Lahan</button>
+        </form>
+        <div id="result-yield-plan" class="result-box"><p>Rencana kondisi lahan akan muncul di sini.</p></div>
     </div>
 
     <script>
@@ -970,6 +992,38 @@
                 };
             }
             startBtn.addEventListener('click', startDiagnostic);
+
+            // --- Logika untuk Modul 19 (Perencana Hasil Panen) ---
+            const yieldPlanForm = document.getElementById('yield-plan-form');
+            const resultYieldPlanDiv = document.getElementById('result-yield-plan');
+            yieldPlanForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                resultYieldPlanDiv.innerHTML = '<p>Mencari resep lahan optimal...</p>';
+                const requestData = {
+                    commodity: document.getElementById('plan-commodity-select').value,
+                    target_yield: document.getElementById('plan-target-yield-input').value
+                };
+                try {
+                    const response = await fetch(`${baseUrl}/generate-yield-plan`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestData)
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        let htmlResult = `<h3>Rekomendasi Kondisi Lahan</h3><p>Untuk mencapai target panen sekitar <strong>${requestData.target_yield} ton/ha</strong>, berikut adalah resep kondisi lahan berdasarkan data kami yang paling mendekati:</p><ul class="item-list mt-4">`;
+                        for(const [key, value] of Object.entries(data.plan)) {
+                             htmlResult += `<li class="plan-item"><span class="plan-item-label">${key}</span><span class="plan-item-value">${value}</span></li>`;
+                        }
+                        htmlResult += `</ul><br><small><strong>Disclaimer:</strong> Ini adalah target berdasarkan data historis, bukan jaminan.</small>`;
+                        resultYieldPlanDiv.innerHTML = htmlResult;
+                    } else {
+                        resultYieldPlanDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${data.error}</p>`;
+                    }
+                } catch (error) {
+                    resultYieldPlanDiv.innerHTML = `<p style="color: red;"><strong>Error:</strong> Gagal terhubung ke server.</p>`;
+                }
+            });
         });
     </script>
 </body>
