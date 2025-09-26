@@ -109,7 +109,7 @@ Silakan lihat [CONTRIBUTING.md](CONTRIBUTING.md) untuk panduan lebih lanjut.
 
 - **Nama**: Yandri (sesuaikan dengan nama Anda).
 - **GitHub**: [yandri918](https://github.com/yandri918)
-- **Email**: [your-email@example.com](mailto:your-email@example.com)
+- **Email**: yandri918@gmail.com
 - **Demo**: [https://agrisensa-api.onrender.com/](https://agrisensa-api.onrender.com/)
 
 ## 🙏 Ucapan Terima Kasih
